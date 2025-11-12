@@ -1,6 +1,6 @@
 import { ColorScheme, StartScreenPrompt, ThemeOption } from "@openai/chatkit";
 
-/** === ⚙️ Configuration générale === */
+/** === ⚙️ Configuration générale (BASIC) === */
 export const APP_NAME = "MyCarAdvisor Basic";
 
 export const WORKFLOW_ID =
@@ -9,39 +9,33 @@ export const WORKFLOW_ID =
 export const CREATE_SESSION_ENDPOINT = "/api/create-session";
 export const PLAN = "basic";
 
-/** === 🧠 Prompts rapides visibles sur l’écran d’accueil === */
+/** === 🧠 Prompts rapides (plus simples pour Basic) === */
 export const STARTER_PROMPTS: StartScreenPrompt[] = [
   {
-    label: "Fiabilité Golf 7 1.6 TDI (2015)",
-    prompt: "Peux-tu me dire si la Golf 7 1.6 TDI 2015 est fiable ?",
+    label: "Fiabilité Clio 2016",
+    prompt: "La Renault Clio 2016 est-elle fiable pour un usage quotidien ?",
   },
   {
-    label: "Coût d’entretien Yaris 2018",
-    prompt: "Quel est le coût d’entretien moyen d’une Toyota Yaris 2018 ?",
-  },
-  {
-    label: "Estimation de reprise",
+    label: "Coût d’entretien annuel",
     prompt:
-      "Quelle est la valeur de reprise estimée pour une Peugeot 308 2017, 95 000 km, bon état, 2e main ?",
+      "Combien coûte l’entretien annuel moyen d’une citadine essence récente ?",
   },
   {
-    label: "Comparatif conso hybride vs diesel",
+    label: "Estimer la conso",
     prompt:
-      "Compare la consommation et le coût annuel d’une Corolla Hybride 2020 vs une Clio 1.5 dCi 2020 pour 15 000 km/an.",
+      "Estime la consommation pour 12 000 km/an avec un petit moteur essence.",
   },
 ];
 
-/** === 💬 Texte par défaut dans la barre de saisie === */
-export const PLACEHOLDER_INPUT = "Posez votre question (Premium)";
+/** === 💬 Placeholder de la barre de saisie === */
+export const PLACEHOLDER_INPUT = "Posez une question automobile (Basic)";
 
-/** === 👋 Message d’accueil du chatbot ===
- * -> le markdown ** ... ** mettra bien le début en gras
- */
+/** === 👋 Message d’accueil (Markdown OK) === */
 export const GREETING =
-  "**Bonjour 👋 et bienvenue sur MyCarAdvisor Premium.** Posez-moi vos questions sur la fiabilité, l’entretien, la valeur de votre véhicule, et profitez d’analyses détaillées.";
+  "Bonjour 👋 Je suis **MyCarAdvisor Basic**. Posez vos questions simples sur la fiabilité, l’entretien et la consommation.";
 
-/** === 🎨 Thème du chat (palette Premium) ===
- * On reste dans les props que ta version de @openai/chatkit connaît.
+/** === 🎨 Thème du chat (Basic) ===
+ * Palette plus neutre, accent vert “MyCarAdvisor”
  */
 export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
   color: {
@@ -51,8 +45,7 @@ export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
       shade: theme === "dark" ? -1 : -4,
     },
     accent: {
-      // vert premium
-      primary: theme === "dark" ? "#00c58e" : "#0f766e",
+      primary: "#10B981", // vert émeraude
       level: 1,
     },
   },
