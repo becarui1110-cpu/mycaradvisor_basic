@@ -2,18 +2,15 @@ export const runtime = "edge";
 
 const encoder = new TextEncoder();
 
+/** Convertit ArrayBuffer → base64url */
 function toBase64Url(buffer: ArrayBuffer) {
   const bytes = new Uint8Array(buffer);
   let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+/** Génère le token signé */
 async function makeToken(secret: string, minutes: number) {
   const expiresAt = Date.now() + minutes * 60 * 1000;
 
@@ -25,42 +22,36 @@ async function makeToken(secret: string, minutes: number) {
     ["sign"]
   );
 
-  const sigBuf = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(String(expiresAt))
-  );
-
+  const sigBuf = await crypto.subtle.sign("HMAC", key, encoder.encode(String(expiresAt)));
   const signature = toBase64Url(sigBuf);
 
   return `${expiresAt}.${signature}`;
 }
 
+/** === POST handler : génère le lien BASIC === */
 export async function POST(req: Request) {
   const tokenSecret = process.env.TOKEN_SECRET;
-  const siteUrl = (process.env.SITE_URL || "https://basic.mycaradvisor.ch").replace(
-    /\/$/,
-    ""
-  );
+
+  const siteUrl = (process.env.SITE_URL || "https://basic.mycaradvisor.ch").replace(/\/$/, "");
 
   if (!tokenSecret) {
-    return new Response(
-      JSON.stringify({ error: "TOKEN_SECRET missing in Vercel" }),
-      { status: 500, headers: { "content-type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "TOKEN_SECRET missing in Vercel" }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
   }
 
-  let durationMinutes = 60; // défaut
+  // Par défaut BASIC = 60 minutes
+  let durationMinutes = 60;
+
   try {
     const body = (await req.json()) as { duration?: number | string };
     if (body.duration) {
-      durationMinutes =
-        typeof body.duration === "string"
-          ? Number(body.duration)
-          : body.duration;
+      const val = Number(body.duration);
+      if (!Number.isNaN(val) && val > 0) durationMinutes = val;
     }
   } catch {
-    // pas grave, on prend 60
+    // Rien à faire → reste 60 min
   }
 
   const token = await makeToken(tokenSecret, durationMinutes);
@@ -72,11 +63,11 @@ export async function POST(req: Request) {
   });
 }
 
-// optionnel, pour que le navigateur ne crie pas sur GET
+/** GET pour tester */
 export async function GET() {
   return new Response(
     JSON.stringify({
-      message: "Use POST with JSON body: { \"duration\": 60 }",
+      message: 'Use POST with JSON body: { "duration": 60 } (default BASIC)',
     }),
     { status: 405, headers: { "content-type": "application/json" } }
   );
