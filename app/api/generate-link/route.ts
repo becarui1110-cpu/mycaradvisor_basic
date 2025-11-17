@@ -9,11 +9,15 @@ function toBase64Url(buffer: ArrayBuffer) {
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 export async function GET(request: Request) {
   const secret = process.env.TOKEN_SECRET;
+
   if (!secret) {
     return new Response(
       JSON.stringify({ error: "TOKEN_SECRET manquant dans Vercel" }),
@@ -44,8 +48,10 @@ export async function GET(request: Request) {
 
   const token = `${expiresAt}.${signature}`;
 
-  const siteUrl = "https://premium.mycaradvisor.ch";
-  const link = `${siteUrl}/?token=${token}`;
+  const siteUrl = "https://basic.mycaradvisor.ch";
+
+  // 🔥 IMPORTANT : encodage du token
+  const link = `${siteUrl}/?token=${encodeURIComponent(token)}`;
 
   return new Response(JSON.stringify({ link }), {
     status: 200,
