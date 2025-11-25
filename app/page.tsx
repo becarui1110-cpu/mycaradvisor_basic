@@ -1,11 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import App from "./App";
 
 export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [infoOpen, setInfoOpen] = useState(false);
+
+  // ===== TIMER TOKEN (60 min) =====
+  const TOKEN_DURATION_SEC = 60 * 60; // 60 minutes
+
+  // on fixe l’instant de départ au montage
+  const [startedAt] = useState<number>(() => Date.now());
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const remainingSec = useMemo(() => {
+    const elapsed = Math.floor((now - startedAt) / 1000);
+    return Math.max(TOKEN_DURATION_SEC - elapsed, 0);
+  }, [now, startedAt]);
+
+  const tokenExpired = remainingSec <= 0;
+
+  const formatRemaining = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
 
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-50 flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
@@ -84,7 +109,16 @@ export default function Home() {
             </p>
             <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-4 space-y-1">
               <p className="text-xs uppercase tracking-wide text-slate-400">Durée du lien</p>
-              <p className="text-base font-semibold text-slate-50">60 minutes</p>
+
+              {/* ✅ TIMER DESKTOP */}
+              <p
+                className={`text-base font-semibold ${
+                  tokenExpired ? "text-rose-300" : "text-slate-50"
+                }`}
+              >
+                {tokenExpired ? "Expiré" : formatRemaining(remainingSec)}
+              </p>
+
               <p className="text-xs text-slate-500">Le contrôle d’expiration est géré côté serveur.</p>
             </div>
           </div>
@@ -121,7 +155,15 @@ export default function Home() {
             <p className="text-sm text-slate-400">Lien temporaire — demandez un nouveau lien si besoin.</p>
             <div className="bg-slate-950/40 border border-slate-800 rounded-lg p-3 space-y-1">
               <p className="text-[11px] uppercase tracking-wide text-slate-400">Durée</p>
-              <p className="text-sm font-semibold text-slate-50">60 minutes</p>
+
+              {/* ✅ TIMER MOBILE */}
+              <p
+                className={`text-sm font-semibold ${
+                  tokenExpired ? "text-rose-300" : "text-slate-50"
+                }`}
+              >
+                {tokenExpired ? "Expiré" : formatRemaining(remainingSec)}
+              </p>
             </div>
             <a
               href="https://mycaradvisor.ch"
