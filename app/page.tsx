@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import App from "./App";
 
-const LINK_TTL_MINUTES = 60; // durée totale du lien MyCar Basic
+const LINK_TTL_MINUTES = 60; // durée totale du lien MyCar Basic (pour l'affichage/progression)
 
 type TimeParts = {
   hours: string;
@@ -38,17 +38,17 @@ function HomeInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // 1) Récupérer la date d'expiration à partir du token
+  // 1) Lire l'expiration depuis le token (ts = expiresAt en ms)
   useEffect(() => {
     const token = searchParams.get("token");
     if (!token) return;
 
     const [tsStr] = token.split(".");
-    const issuedAt = Number(tsStr);
-    if (!Number.isFinite(issuedAt)) return;
+    const exp = Number(tsStr);
 
-    // ✅ FIX : dans Basic, ts = moment de création => on ajoute 60 min
-    const exp = issuedAt + LINK_TTL_MINUTES * 60 * 1000;
+    if (!Number.isFinite(exp)) return;
+
+    // ✅ IMPORTANT : dans Basic, le ts est déjà expiresAt
     setExpiresAt(exp);
   }, [searchParams]);
 
