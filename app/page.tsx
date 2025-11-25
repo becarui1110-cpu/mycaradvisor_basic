@@ -38,16 +38,18 @@ function HomeInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // 1) Récupérer la date d'expiration dans le token (timestamp en ms)
+  // 1) Récupérer la date d'expiration à partir du token
   useEffect(() => {
     const token = searchParams.get("token");
     if (!token) return;
 
     const [tsStr] = token.split(".");
-    const ts = Number(tsStr);
+    const issuedAt = Number(tsStr);
+    if (!Number.isFinite(issuedAt)) return;
 
-    if (!Number.isFinite(ts)) return;
-    setExpiresAt(ts);
+    // ✅ FIX : dans Basic, ts = moment de création => on ajoute 60 min
+    const exp = issuedAt + LINK_TTL_MINUTES * 60 * 1000;
+    setExpiresAt(exp);
   }, [searchParams]);
 
   // 2) Compte à rebours + redirection quand expiré
@@ -294,7 +296,7 @@ function HomeInner() {
                 Temps restant
               </p>
 
-              {/* ✅ TIMER MOBILE */}
+              {/* TIMER MOBILE */}
               <div className="flex items-center gap-2 font-mono text-lg font-semibold">
                 <span>{hasData ? timeParts.hours : "--"}</span>:
                 <span>{hasData ? timeParts.minutes : "--"}</span>:
